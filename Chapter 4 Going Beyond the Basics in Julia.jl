@@ -231,18 +231,17 @@ show(num_string)
 p = r"[0-9]\w+"
 nums = join(matchall(p, num_string))
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+for i in 1:length(numbers)
+        dict = Dict(K)
+print(numbers)
 num_zeros = 0
 num_dist = Dict()
-for i in 1:length(num)
+for i in 1:length(numbers)
         if num[i] == 0
 
 
-X = [1, 2, 3, 1, 2, 1, 1, 1]
-ux = unique(X)
-n = length(ux)
-z = Dict()
-z.keys = ux
-z[1]
+
+
 for x in X
         ind = findin(ux, x)
         z[ind] += 1
