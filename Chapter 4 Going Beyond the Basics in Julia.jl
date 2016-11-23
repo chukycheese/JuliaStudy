@@ -166,6 +166,7 @@ function main{T<:Any}(X::Array{T})
 end
 
 # p.99 Problem 3
+# mode를 찾는 함수
 function mode{T<:Any}(X::Array{T})
         if typeof(X) != "Arr"
         ux = unique(X)
@@ -180,6 +181,7 @@ function mode{T<:Any}(X::Array{T})
 end
 
 # p.99 Problem 4
+# 입력된 String 에 포함된 단어의 갯수를 세는 함수
 function count_words(X::AbstractString)
         split_words = split(X, " ")
         return length(split_words)
@@ -194,6 +196,7 @@ using Base.Test
 @test count_words("thiswillbelongasswordbutstillone") == 1
 
 # p.99 Problem 5
+# 입력된 String 에 포함된 character 의 갯수를 반환하는 함수
 function counts_chars(X::AbstractString)
         spaces = 0
         characters = 0
@@ -209,7 +212,6 @@ function counts_chars(X::AbstractString)
         return characters / len
 end
 
-
 @test counts_chars("Test1") == 1
 @test counts_chars("     ") == 0
 @test counts_chars("tesT2 ") == 5/6
@@ -217,34 +219,91 @@ end
 @test counts_chars("1234 6789 ") == 8/10
 
 # p.99 Problem 6
-function counting_nums{T<:Numbers}(X::Array{T})
+# 숫자 Array 를 받아서 Character Vector 로 반환해주는 함수
+function num_to_string{T<:Number}(X::Array{T})::Vector{Char}
+        whole_string = join(X, "")
+        numbers = []
+        for i in collect(whole_string)
+                if i in "1234567890"
+                        push!(numbers, i)
+                end
+        end
 
-
-
+        return numbers
 end
 
+@test num_to_string([123, 321]) == ['1', '2', '3', '3', '2', '1']
+@test num_to_string([123, 456]) == ['1', '2', '3', '4', '5', '6']
+@test num_to_string([1.23, 45.6]) == ['1', '2', '3', '4', '5', '6']
+@test num_to_string([-1.23, 45.6]) == ['1', '2', '3', '4', '5', '6']
 
-
-A = randn(2, 2)
-num_string = join(map(string, A))
-show(num_string)
-p = r"[0-9]\w+"
-nums = join(matchall(p, num_string))
-numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-for i in 1:length(numbers)
-        dict = Dict(K)
-print(numbers)
-num_zeros = 0
-num_dist = Dict()
-for i in 1:length(numbers)
-        if num[i] == 0
-
-
-
-
-for x in X
-        ind = findin(ux, x)
-        z[ind] += 1
+# 입력된 숫자 Array 에 있는 0-9까지의 갯수를 Dictionary 형태로 반환해주는 함수
+function counting_nums{T<:Number}(X::Array{T})
+        x = num_to_string(X)
+        cm = Dict{Char, Int}()
+        for v in x
+                cm[v] = get(cm, v, 0) + 1
+        end
+        return cm
 end
 
-println(z)
+# Pkg.add("StatsBase")
+
+# using Base.Test
+@test counting_nums([1.2, 2.3]) == Dict('1' => 1, '2' => 2, '3' => 1)
+@test counting_nums([1.5, 2.7]) == Dict('1' => 1, '2' => 1, '5' => 1, '7' => 1)
+@test counting_nums([1.5 2.7; -1.2 2.2]) == Dict('1' => 2, '2' => 4, '5' => 1, '7' => 1)
+
+function most_common_digit{T<:Number}(num_array::Array{T})
+        num_dist = counting_nums(num_array)
+        most_freq_num_ind = indmax(values(num_dist))
+        dict_keys = collect(keys(num_dist))
+        return dict_keys[most_freq_num_ind]
+end
+
+most_common_digit([1.5 2.7; -1.2 2.2])
+
+@test most_common_digit([1.5 2.7; -1.2 2.2]) == '2'
+@test most_common_digit([1.5 2.7; -1.1 1.1]) == '1'
+@test most_common_digit([1.5123 2.74123; -1.333 2.333]) == '3'
+
+
+Pkg.add("UnicodePlots")
+using UnicodePlots
+
+# counting_nums() 에서 반환되는 Dictionary 를 오름차순으로 정렬해주는 함수
+function dict_sort(X::Dict)::Tuple{Vector{String}, Vector{Int}}
+        dict_key = sort(collect(keys(X)))
+        dict_values = []
+        for k in dict_key
+                push!(dict_values, X[k])
+        end
+        return (map(string, dict_key), dict_values)
+end
+
+# 숫자의 Array를 받아서 0-9까지의 숫자로 반환해주는 함수
+function num_to_int{T<:Number}(X::Array{T})::Vector{Int}
+        whole_string = join(X, "")
+        numbers = []
+        for i in collect(whole_string)
+                if i in "1234567890"
+                        push!(numbers, parse(Int, i))
+                end
+        end
+
+        return numbers
+end
+
+histogram(num_to_int([big(pi)]))
+
+# pi를 받아서 0-9까지 각 숫자의 갯수를 세어보자
+function count_pi(n::BigFloat)
+        println(n)
+        big_num = num_to_int([n])
+        big_num_dict = counting_nums(big_num)
+        (k, v) = dict_sort(big_num_dict)
+        println(barplot(k, v))
+        println(histogram(big_num, bins = 10))
+end
+
+count_pi(big(pi))
